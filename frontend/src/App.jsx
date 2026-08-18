@@ -105,23 +105,11 @@ export default function App() {
             {loading ? '⏳ Running...' : '▶ Run Pipeline'}
           </button>
 
-          <button
-            onClick={handleDownload}
-            disabled={!result}
-            style={{
-              ...styles.downloadButton,
-              opacity: !result ? 0.5 : 1,
-              cursor: !result ? 'not-allowed' : 'pointer',
-            }}
-          >
-            💾 Download PNG
-          </button>
-
           {error && <div style={styles.error}>{error}</div>}
         </aside>
 
         <main style={styles.main} ref={plotRef}>
-          <UmapPlot data={result} loading={loading} params={params} datasetName={datasetName} onLoadDemo={handleLoadDemo} />
+          <UmapPlot data={result} loading={loading} params={params} datasetName={datasetName} onLoadDemo={handleLoadDemo} onDownload={handleDownload} />
         </main>
       </div>
     </div>
@@ -169,18 +157,6 @@ const styles = {
     fontSize: '16px',
     fontWeight: 600,
     marginTop: '20px',
-    transition: 'background-color 0.2s',
-  },
-  downloadButton: {
-    width: '100%',
-    padding: '12px 16px',
-    backgroundColor: '#007bff',
-    color: 'white',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '16px',
-    fontWeight: 600,
-    marginTop: '10px',
     transition: 'background-color 0.2s',
   },
   error: {

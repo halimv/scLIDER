@@ -28,7 +28,7 @@ const COLORS = [
   '#FF9999', '#FFCC99', '#FFFF99', '#99FF99', '#99FFCC',
 ]
 
-export default function UmapPlot({ data, loading, params, datasetName, onLoadDemo }) {
+export default function UmapPlot({ data, loading, params, datasetName, onLoadDemo, onDownload }) {
   const [elapsedTime, setElapsedTime] = useState(0)
 
   useEffect(() => {
@@ -167,10 +167,27 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h2>{embeddingTitle} ({displayName}) | {data.n_cells} cells | {data.n_clusters} clusters</h2>
-        {paramStr && <p style={styles.paramDetails}>{paramStr}</p>}
+        <div style={styles.headerContent}>
+          <div>
+            <h2>{embeddingTitle} ({displayName}) | {data.n_cells} cells | {data.n_clusters} clusters</h2>
+            {paramStr && <p style={styles.paramDetails}>{paramStr}</p>}
+          </div>
+          <button
+            onClick={onDownload}
+            disabled={!data}
+            style={{
+              ...styles.downloadButton,
+              opacity: !data ? 0.5 : 1,
+              cursor: !data ? 'not-allowed' : 'pointer',
+            }}
+            title="Download as PNG"
+          >
+            ⬇️
+          </button>
+        </div>
       </div>
-      <ResponsiveContainer width="100%" height={500}>
+      <div style={styles.chartWrapper}>
+        <ResponsiveContainer width="100%" height={600}>
         <ScatterChart margin={{ top: 20, right: 60, bottom: 60, left: 60 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -213,6 +230,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
           )}
         </ScatterChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }
@@ -227,10 +245,34 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
+  chartWrapper: {
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: '1000px',
+    margin: '0 auto',
+  },
   header: {
     marginBottom: '20px',
     borderBottom: '1px solid #eee',
     paddingBottom: '10px',
+  },
+  headerContent: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: '20px',
+  },
+  downloadButton: {
+    padding: '8px 12px',
+    backgroundColor: '#0066cc',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '18px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
   },
   paramDetails: {
     fontSize: '11px',
