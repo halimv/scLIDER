@@ -10,8 +10,9 @@ def run_pipeline(
     n_top_genes: int = 2000,
     n_pcs: int = 30,
     n_neighbors: int = 15,
-    leiden_resolution: float = 0.5,
+    clustering_resolution: float = 0.5,
     umap_min_dist: float = 0.1,
+    clustering_method: str = "leiden",
     progress_callback=None,
 ) -> ad.AnnData:
     """
@@ -31,10 +32,12 @@ def run_pipeline(
         Number of principal components.
     n_neighbors : int
         Number of neighbors for KNN graph.
-    leiden_resolution : float
+    clustering_resolution : float
         Resolution parameter for Leiden clustering.
     umap_min_dist : float
         Minimum distance for UMAP.
+    clustering_method : str
+        Clustering algorithm to use: "leiden" or "louvain".
 
     Returns
     -------
@@ -83,8 +86,14 @@ def run_pipeline(
     _progress("Building KNN graph...")
     sc.pp.neighbors(adata, n_neighbors=n_neighbors, use_rep='X_pca')
 
-    _progress("Leiden clustering...")
-    sc.tl.leiden(adata, resolution=leiden_resolution)
+    if clustering_method == "leiden":
+        _progress("Leiden clustering...")
+        sc.tl.leiden(adata, resolution=clustering_resolution)
+    elif clustering_method == "louvain":
+        _progress("Louvain clustering...")
+        sc.tl.louvain(adata, resolution=clustering_resolution)
+    else:
+        raise ValueError(f"Unknown clustering method: {clustering_method}")
 
     _progress("Computing UMAP...")
     sc.tl.umap(adata, min_dist=umap_min_dist)

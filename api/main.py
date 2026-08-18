@@ -28,8 +28,9 @@ async def run_analysis(
     n_top_genes: int = Form(2000),
     n_pcs: int = Form(30),
     n_neighbors: int = Form(15),
-    leiden_resolution: float = Form(0.5),
+    clustering_resolution: float = Form(0.5),
     umap_min_dist: float = Form(0.1),
+    clustering_method: str = Form("leiden"),
 ):
     try:
         content = await file.read()
@@ -67,8 +68,9 @@ async def run_analysis(
             n_top_genes=n_top_genes,
             n_pcs=n_pcs,
             n_neighbors=n_neighbors,
-            leiden_resolution=leiden_resolution,
+            clustering_resolution=clustering_resolution,
             umap_min_dist=umap_min_dist,
+            clustering_method=clustering_method,
         )
 
         print(f"DEBUG: Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")

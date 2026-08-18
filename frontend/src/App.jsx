@@ -17,8 +17,9 @@ export default function App() {
     n_top_genes: 2000,
     n_pcs: 30,
     n_neighbors: 15,
-    leiden_resolution: 0.5,
+    clustering_resolution: 0.5,
     umap_min_dist: 0.1,
+    clustering_method: 'leiden',
   })
 
   const handleRun = async () => {
@@ -47,7 +48,7 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_leiden_res=${params.leiden_resolution}_umap_min_dist=${params.umap_min_dist}`
+      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_leiden_res=${params.clustering_resolution}_umap_min_dist=${params.umap_min_dist}`
       link.href = canvas.toDataURL('image/png')
       link.download = `scLIDER_UMAP_${timestamp}_${paramStr}.png`
       link.click()

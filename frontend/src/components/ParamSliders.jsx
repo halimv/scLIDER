@@ -45,6 +45,12 @@ export default function ParamSliders({ params, onParamChange }) {
 
       <div style={styles.section}>
         <h4>Clustering & Embedding</h4>
+        <RadioGroup
+          label="Clustering method"
+          value={params.clustering_method}
+          options={['leiden', 'louvain']}
+          onChange={(v) => handleChange('clustering_method', v)}
+        />
         <Slider
           label="KNN neighbors"
           value={params.n_neighbors}
@@ -53,12 +59,12 @@ export default function ParamSliders({ params, onParamChange }) {
           onChange={(v) => handleChange('n_neighbors', v)}
         />
         <Slider
-          label="Leiden resolution"
-          value={params.leiden_resolution}
+          label="Clustering resolution"
+          value={params.clustering_resolution}
           min={0.1}
           max={2}
           step={0.1}
-          onChange={(v) => handleChange('leiden_resolution', v)}
+          onChange={(v) => handleChange('clustering_resolution', v)}
         />
         <Slider
           label="UMAP min_dist"
@@ -92,6 +98,29 @@ function Slider({ label, value, min, max, step = 1, onChange }) {
   )
 }
 
+function RadioGroup({ label, value, options, onChange }) {
+  return (
+    <div style={styles.radioGroup}>
+      <label style={styles.sliderLabel}>{label}</label>
+      <div style={styles.radioOptions}>
+        {options.map((option) => (
+          <label key={option} style={styles.radioLabel}>
+            <input
+              type="radio"
+              name={label}
+              value={option}
+              checked={value === option}
+              onChange={(e) => onChange(e.target.value)}
+              style={styles.radioInput}
+            />
+            <span style={styles.radioText}>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 const styles = {
   container: {
     display: 'flex',
@@ -118,5 +147,25 @@ const styles = {
   slider: {
     width: '100%',
     cursor: 'pointer',
+  },
+  radioGroup: {
+    marginBottom: '12px',
+  },
+  radioOptions: {
+    display: 'flex',
+    gap: '12px',
+  },
+  radioLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  radioInput: {
+    cursor: 'pointer',
+  },
+  radioText: {
+    userSelect: 'none',
   },
 }
