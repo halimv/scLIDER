@@ -1,0 +1,94 @@
+import scanpy as sc
+import anndata as ad
+from pathlib import Path
+
+
+def run_pipeline(
+    data_path: str,
+    n_genes_min: int = 200,
+    pct_mt_max: float = 10.0,
+    n_top_genes: int = 2000,
+    n_pcs: int = 30,
+    n_neighbors: int = 15,
+    leiden_resolution: float = 0.5,
+    umap_min_dist: float = 0.1,
+    progress_callback=None,
+) -> ad.AnnData:
+    """
+    Run full scRNA-seq analysis pipeline.
+
+    Parameters
+    ----------
+    data_path : str
+        Path to 10X data directory or CSV file (genes x cells).
+    n_genes_min : int
+        Minimum number of genes per cell.
+    pct_mt_max : float
+        Maximum percent mitochondrial reads per cell.
+    n_top_genes : int
+        Number of highly variable genes to keep.
+    n_pcs : int
+        Number of principal components.
+    n_neighbors : int
+        Number of neighbors for KNN graph.
+    leiden_resolution : float
+        Resolution parameter for Leiden clustering.
+    umap_min_dist : float
+        Minimum distance for UMAP.
+
+    Returns
+    -------
+    ad.AnnData
+        Processed AnnData object with embeddings and clusters.
+    """
+
+    def _progress(stage):
+        if progress_callback:
+            progress_callback(stage)
+
+    # Load data
+    _progress("Loading data...")
+    path = Path(data_path)
+    if path.is_dir():
+        adata = sc.read_10x_mtx(data_path, var_names='gene_symbols', cache=True)
+    elif path.suffix == '.csv':
+        import pandas as pd
+        df = pd.read_csv(data_path, index_col=0)
+        adata = ad.AnnData(X=df.T.values, obs=pd.DataFrame(index=df.columns), var=pd.DataFrame(index=df.index))
+    else:
+        raise ValueError("Data must be 10X directory or CSV file")
+
+    # QC and filtering
+    _progress("QC & Filtering...")
+    adata.var["mt"] = adata.var_names.str.startswith("Mt-") | adata.var_names.str.startswith("MT-")
+    adata.var["ribo"] = adata.var_names.str.startswith(("RPS", "RPL"))
+    adata.var["hb"] = adata.var_names.str.contains("^HB[^(P)]")
+    sc.pp.calculate_qc_metrics(adata, qc_vars=["mt", "ribo", "hb"], inplace=True, log1p=True)
+    adata = adata[
+        (adata.obs['n_genes_by_counts'] > n_genes_min) &
+        (adata.obs['pct_counts_mt'] < pct_mt_max)
+    ]
+
+    # Normalize
+    _progress("Normalizing...")
+    sc.pp.normalize_total(adata)
+    sc.pp.log1p(adata)
+
+    # HVG selection and PCA
+    _progress("Selecting HVGs & PCA...")
+    sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes)
+    sc.tl.pca(adata, n_comps=n_pcs, use_highly_variable=True)
+
+    # Clustering and embedding
+    _progress("Building KNN graph...")
+    sc.pp.neighbors(adata, n_neighbors=n_neighbors, use_rep='X_pca')
+
+    _progress("Leiden clustering...")
+    sc.tl.leiden(adata, resolution=leiden_resolution)
+
+    _progress("Computing UMAP...")
+    sc.tl.umap(adata, min_dist=umap_min_dist)
+
+    _progress("Done!")
+
+    return adata
