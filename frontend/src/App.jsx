@@ -46,6 +46,22 @@ export default function App() {
     }
   }
 
+  const handleLoadDemo = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const response = await fetch('/api/demo')
+      if (!response.ok) throw new Error('Failed to load demo dataset')
+      const data = await response.json()
+      setResult(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleDownload = async () => {
     if (!plotRef.current) return
 
@@ -71,6 +87,18 @@ export default function App() {
 
       <div style={styles.container}>
         <aside style={styles.sidebar}>
+          <button
+            onClick={handleLoadDemo}
+            disabled={loading}
+            style={{
+              ...styles.demoButton,
+              opacity: loading ? 0.5 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {loading ? '⏳ Running...' : '📊 Demo: Load & Run (Default Params)'}
+          </button>
+
           <UploadPanel file={file} onFileSelect={setFile} />
 
           <ParamSliders params={params} onParamChange={setParams} />
@@ -140,6 +168,18 @@ const styles = {
     flex: 1,
     padding: '20px',
     overflowY: 'auto',
+  },
+  demoButton: {
+    width: '100%',
+    padding: '12px 16px',
+    backgroundColor: '#6c63ff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '16px',
+    fontWeight: 600,
+    marginBottom: '10px',
+    transition: 'background-color 0.2s',
   },
   runButton: {
     width: '100%',

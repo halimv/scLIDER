@@ -135,6 +135,86 @@ async def run_analysis(
         raise HTTPException(status_code=500, detail=f"Pipeline error: {str(e)}")
 
 
+@app.get("/demo")
+async def run_demo():
+    """Run pipeline with built-in Thymus 10X demo dataset"""
+    demo_zip = Path(__file__).parent.parent / "data" / "Thymus-10X.zip"
+
+    if not demo_zip.exists():
+        raise HTTPException(status_code=404, detail="Demo dataset not found")
+
+    content = demo_zip.read_bytes()
+    tmp_dir = tempfile.mkdtemp()
+    zip_path = Path(tmp_dir) / "demo.zip"
+    zip_path.write_bytes(content)
+
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(tmp_dir)
+
+    # Find the 10X data directory
+    data_path = Path(tmp_dir)
+    for item in data_path.rglob('matrix.mtx'):
+        data_path = item.parent
+        break
+
+    try:
+        adata = run_pipeline(
+            str(data_path),
+            n_genes_min=200,
+            pct_mt_max=10.0,
+            n_top_genes=2000,
+            n_pcs=30,
+            n_neighbors=15,
+            clustering_resolution=0.5,
+            clustering_method="leiden",
+            normalization_method="log",
+            embedding_method="umap",
+            umap_min_dist=0.1,
+            umap_learning_rate=1.0,
+            tsne_perplexity=30.0,
+            tsne_learning_rate=200.0,
+        )
+
+        print(f"DEBUG: Demo - Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")
+
+        shutil.rmtree(tmp_dir)
+
+        umap_coords = asarray(adata.obsm['X_umap'])
+        clusters = asarray(adata.obs['leiden'].astype(int))
+        cell_names = adata.obs_names.tolist()
+
+        cells = [
+            {
+                "node": str(cell_names[i]),
+                "umap1": float(umap_coords[i, 0]),
+                "umap2": float(umap_coords[i, 1]),
+                "cluster": int(clusters[i]),
+            }
+            for i in range(len(cell_names))
+        ]
+
+        cluster_labels = []
+        for cluster_id in sorted(adata.obs['leiden'].unique()):
+            mask = clusters == int(cluster_id)
+            centroid_x = float(umap_coords[mask, 0].mean())
+            centroid_y = float(umap_coords[mask, 1].mean())
+            cluster_labels.append({
+                "cluster": int(cluster_id),
+                "x": centroid_x,
+                "y": centroid_y,
+            })
+
+        return {
+            "cells": cells,
+            "cluster_labels": cluster_labels,
+            "n_cells": adata.n_obs,
+            "n_clusters": len(adata.obs['leiden'].unique()),
+        }
+    except Exception as e:
+        shutil.rmtree(tmp_dir)
+        raise HTTPException(status_code=500, detail=f"Demo pipeline error: {str(e)}")
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
