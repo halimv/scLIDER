@@ -12,7 +12,6 @@ def run_pipeline(
     n_neighbors: int = 15,
     clustering_resolution: float = 0.5,
     clustering_method: str = "leiden",
-    normalization_method: str = "log",
     embedding_method: str = "umap",
     umap_min_dist: float = 0.1,
     umap_learning_rate: float = 1.0,
@@ -22,37 +21,6 @@ def run_pipeline(
 ) -> ad.AnnData:
     """
     Run full scRNA-seq analysis pipeline.
-
-    Parameters
-    ----------
-    data_path : str
-        Path to 10X data directory or CSV file (genes x cells).
-    n_genes_min : int
-        Minimum number of genes per cell.
-    pct_mt_max : float
-        Maximum percent mitochondrial reads per cell.
-    n_top_genes : int
-        Number of highly variable genes to keep.
-    n_pcs : int
-        Number of principal components.
-    n_neighbors : int
-        Number of neighbors for KNN graph.
-    clustering_resolution : float
-        Resolution parameter for clustering (Leiden or Louvain).
-    clustering_method : str
-        Clustering algorithm to use: "leiden" or "louvain".
-    normalization_method : str
-        Normalization method: "log" or "pearson_residuals".
-    embedding_method : str
-        Embedding method: "umap" or "tsne".
-    umap_min_dist : float
-        Minimum distance for UMAP embedding.
-    umap_learning_rate : float
-        Learning rate (alpha) for UMAP optimization.
-    tsne_perplexity : float
-        Perplexity parameter for t-SNE.
-    tsne_learning_rate : float
-        Learning rate for t-SNE optimization.
 
     Returns
     -------
@@ -89,14 +57,8 @@ def run_pipeline(
 
     # Normalize
     _progress("Normalizing...")
-    if normalization_method == "log":
-        sc.pp.normalize_total(adata)
-        sc.pp.log1p(adata)
-    elif normalization_method == "pearson_residuals":
-        sc.pp.normalize_total(adata)
-        sc.pp.scale(adata, max_value=10)
-    else:
-        raise ValueError(f"Unknown normalization method: {normalization_method}")
+    sc.pp.normalize_total(adata)
+    sc.pp.log1p(adata)
 
     # HVG selection and PCA
     _progress("Selecting HVGs & PCA...")

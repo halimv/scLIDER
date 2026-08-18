@@ -15,7 +15,6 @@ export default function App() {
   const [params, setParams] = useState({
     n_genes_min: 200,
     pct_mt_max: 10.0,
-    normalization_method: 'log',
     n_top_genes: 2000,
     n_pcs: 30,
     n_neighbors: 15,
@@ -71,7 +70,7 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `${params.normalization_method}_${params.clustering_method}_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
+      const paramStr = `${params.clustering_method}_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
       link.href = canvas.toDataURL('image/png')
       link.download = `scLIDER_${timestamp}_${paramStr}.png`
       link.click()

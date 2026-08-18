@@ -99,7 +99,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
             </p>
             <ol style={styles.list}>
               <li><strong>QC Filtering:</strong> Remove low-quality cells based on gene count and mitochondrial percentage</li>
-              <li><strong>Normalization:</strong> Log or scale transformation to account for sequencing depth</li>
+              <li><strong>Normalization:</strong> Library size normalization and log-transformation</li>
               <li><strong>HVG Selection:</strong> Identify highly variable genes for downstream analysis</li>
               <li><strong>PCA:</strong> Dimensionality reduction to principal components</li>
               <li><strong>Neighbors:</strong> Build k-nearest neighbor graph</li>
@@ -161,7 +161,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
   const displayName = datasetName === 'demo' ? 'demo' : datasetName?.replace(/\.[^/.]+$/, '') || 'data'
 
   const paramStr = params
-    ? `norm=${params.normalization_method} | clust=${params.clustering_method} | res=${params.clustering_resolution} | embed=${params.embedding_method} | n_genes=${params.n_genes_min} | pct_mt=${params.pct_mt_max} | n_hvgs=${params.n_top_genes} | n_pcs=${params.n_pcs} | n_neighbors=${params.n_neighbors} | umap_dist=${params.umap_min_dist} | umap_lr=${params.umap_learning_rate} | tsne_perp=${params.tsne_perplexity} | tsne_lr=${params.tsne_learning_rate}`
+    ? `clust=${params.clustering_method} | res=${params.clustering_resolution} | embed=${params.embedding_method} | n_genes=${params.n_genes_min} | pct_mt=${params.pct_mt_max} | n_hvgs=${params.n_top_genes} | n_pcs=${params.n_pcs} | n_neighbors=${params.n_neighbors} | umap_dist=${params.umap_min_dist} | umap_lr=${params.umap_learning_rate} | tsne_perp=${params.tsne_perplexity} | tsne_lr=${params.tsne_learning_rate}`
     : ''
 
   return (
