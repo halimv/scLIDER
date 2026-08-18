@@ -11,6 +11,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [datasetName, setDatasetName] = useState('demo')
   const [params, setParams] = useState({
     n_genes_min: 200,
     pct_mt_max: 10.0,
@@ -35,6 +36,7 @@ export default function App() {
 
     setLoading(true)
     setError(null)
+    setDatasetName(file.name)
 
     try {
       const data = await runPipeline(file, params)
@@ -69,9 +71,9 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_norm=${params.normalization_method}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_clust_res=${params.clustering_resolution}_embedding=${params.embedding_method}_umap_dist=${params.umap_min_dist}_umap_lr=${params.umap_learning_rate}_tsne_perp=${params.tsne_perplexity}_tsne_lr=${params.tsne_learning_rate}`
+      const paramStr = `${params.normalization_method}_${params.clustering_method}_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
       link.href = canvas.toDataURL('image/png')
-      link.download = `scLIDER_${params.embedding_method.toUpperCase()}_${timestamp}_${paramStr}.png`
+      link.download = `scLIDER_${timestamp}_${paramStr}.png`
       link.click()
     } catch (err) {
       setError('Failed to download plot: ' + err.message)
@@ -131,7 +133,7 @@ export default function App() {
         </aside>
 
         <main style={styles.main} ref={plotRef}>
-          <UmapPlot data={result} loading={loading} />
+          <UmapPlot data={result} loading={loading} params={params} datasetName={datasetName} />
         </main>
       </div>
     </div>

@@ -28,7 +28,7 @@ const COLORS = [
   '#FF9999', '#FFCC99', '#FFFF99', '#99FF99', '#99FFCC',
 ]
 
-export default function UmapPlot({ data, loading }) {
+export default function UmapPlot({ data, loading, params, datasetName }) {
   const [elapsedTime, setElapsedTime] = useState(0)
 
   useEffect(() => {
@@ -101,13 +101,18 @@ export default function UmapPlot({ data, loading }) {
   const umap1Padding = (umap1Max - umap1Min) * 0.05
   const umap2Padding = (umap2Max - umap2Min) * 0.05
 
+  const embeddingTitle = params?.embedding_method === 'tsne' ? 'tSNE' : 'UMAP'
+  const displayName = datasetName === 'demo' ? 'demo' : datasetName?.replace(/\.[^/.]+$/, '') || 'data'
+
+  const paramStr = params
+    ? `norm=${params.normalization_method} | clust=${params.clustering_method} | res=${params.clustering_resolution} | embed=${params.embedding_method} | n_genes=${params.n_genes_min} | pct_mt=${params.pct_mt_max} | n_hvgs=${params.n_top_genes} | n_pcs=${params.n_pcs} | n_neighbors=${params.n_neighbors} | umap_dist=${params.umap_min_dist} | umap_lr=${params.umap_learning_rate} | tsne_perp=${params.tsne_perplexity} | tsne_lr=${params.tsne_learning_rate}`
+    : ''
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h2>UMAP Embedding</h2>
-        <p style={styles.stats}>
-          {data.n_cells} cells | {data.n_clusters} clusters
-        </p>
+        <h2>{embeddingTitle} ({displayName}) | {data.n_cells} cells | {data.n_clusters} clusters</h2>
+        {paramStr && <p style={styles.paramDetails}>{paramStr}</p>}
       </div>
       <ResponsiveContainer width="100%" height={500}>
         <ScatterChart margin={{ top: 20, right: 60, bottom: 60, left: 60 }}>
@@ -171,10 +176,13 @@ const styles = {
     borderBottom: '1px solid #eee',
     paddingBottom: '10px',
   },
-  stats: {
-    fontSize: '14px',
-    color: '#666',
-    margin: '5px 0 0 0',
+  paramDetails: {
+    fontSize: '11px',
+    color: '#999',
+    margin: '10px 0 0 0',
+    fontFamily: 'monospace',
+    lineHeight: '1.4',
+    wordBreak: 'break-word',
   },
   loadingContainer: {
     display: 'flex',
