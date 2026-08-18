@@ -33,3 +33,4 @@ extracted/
 # Keep data files
 !data/*.zip
 !data/*.csv
+!data/*.csv
