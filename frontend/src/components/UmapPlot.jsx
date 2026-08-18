@@ -103,7 +103,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
               <li><strong>HVG Selection:</strong> Identify highly variable genes for downstream analysis</li>
               <li><strong>PCA:</strong> Dimensionality reduction to principal components</li>
               <li><strong>Neighbors:</strong> Build k-nearest neighbor graph</li>
-              <li><strong>Clustering:</strong> Leiden or Louvain community detection</li>
+              <li><strong>Clustering:</strong> Leiden community detection</li>
               <li><strong>Embedding:</strong> UMAP or t-SNE visualization</li>
             </ol>
           </div>
@@ -161,7 +161,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
   const displayName = datasetName === 'demo' ? 'demo' : datasetName?.replace(/\.[^/.]+$/, '') || 'data'
 
   const paramStr = params
-    ? `clust=${params.clustering_method} | res=${params.clustering_resolution} | embed=${params.embedding_method} | n_genes=${params.n_genes_min} | pct_mt=${params.pct_mt_max} | n_hvgs=${params.n_top_genes} | n_pcs=${params.n_pcs} | n_neighbors=${params.n_neighbors} | umap_dist=${params.umap_min_dist} | umap_lr=${params.umap_learning_rate} | tsne_perp=${params.tsne_perplexity} | tsne_lr=${params.tsne_learning_rate}`
+    ? `res=${params.clustering_resolution} | embed=${params.embedding_method} | n_genes=${params.n_genes_min} | pct_mt=${params.pct_mt_max} | n_hvgs=${params.n_top_genes} | n_pcs=${params.n_pcs} | n_neighbors=${params.n_neighbors} | umap_dist=${params.umap_min_dist} | umap_lr=${params.umap_learning_rate} | tsne_perp=${params.tsne_perplexity} | tsne_lr=${params.tsne_learning_rate}`
     : ''
 
   return (

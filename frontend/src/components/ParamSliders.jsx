@@ -45,13 +45,6 @@ export default function ParamSliders({ params, onParamChange }) {
 
       <div style={styles.section}>
         <h4>Clustering</h4>
-        <RadioGroup
-          name="clustering_method"
-          label="Method"
-          value={params.clustering_method}
-          options={['leiden', 'louvain']}
-          onChange={(v) => handleChange('clustering_method', v)}
-        />
         <Slider
           label="KNN neighbors"
           value={params.n_neighbors}

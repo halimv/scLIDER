@@ -31,7 +31,6 @@ async def run_analysis(
     n_pcs: int = Form(30),
     n_neighbors: int = Form(15),
     clustering_resolution: float = Form(0.5),
-    clustering_method: str = Form("leiden"),
     embedding_method: str = Form("umap"),
     umap_min_dist: float = Form(0.1),
     umap_learning_rate: float = Form(1.0),
@@ -75,7 +74,6 @@ async def run_analysis(
             n_pcs=n_pcs,
             n_neighbors=n_neighbors,
             clustering_resolution=clustering_resolution,
-            clustering_method=clustering_method,
             embedding_method=embedding_method,
             umap_min_dist=umap_min_dist,
             umap_learning_rate=umap_learning_rate,
@@ -134,7 +132,20 @@ async def run_analysis(
 
 
 @app.get("/demo")
-async def run_demo():
+async def run_demo(
+    n_genes_min: int = 200,
+    pct_mt_max: float = 10.0,
+    n_top_genes: int = 2000,
+    n_pcs: int = 30,
+    n_neighbors: int = 15,
+    clustering_resolution: float = 0.5,
+    clustering_method: str = "leiden",
+    embedding_method: str = "umap",
+    umap_min_dist: float = 0.1,
+    umap_learning_rate: float = 1.0,
+    tsne_perplexity: float = 30.0,
+    tsne_learning_rate: float = 200.0,
+):
     """Run pipeline with built-in Thymus 10X demo dataset"""
     demo_zip = Path(__file__).parent.parent / "data" / "Thymus-10X.zip"
 
@@ -158,18 +169,17 @@ async def run_demo():
     try:
         adata = run_pipeline(
             str(data_path),
-            n_genes_min=200,
-            pct_mt_max=10.0,
-            n_top_genes=2000,
-            n_pcs=30,
-            n_neighbors=15,
-            clustering_resolution=0.5,
-            clustering_method="leiden",
-            embedding_method="umap",
-            umap_min_dist=0.1,
-            umap_learning_rate=1.0,
-            tsne_perplexity=30.0,
-            tsne_learning_rate=200.0,
+            n_genes_min=n_genes_min,
+            pct_mt_max=pct_mt_max,
+            n_top_genes=n_top_genes,
+            n_pcs=n_pcs,
+            n_neighbors=n_neighbors,
+            clustering_resolution=clustering_resolution,
+            embedding_method=embedding_method,
+            umap_min_dist=umap_min_dist,
+            umap_learning_rate=umap_learning_rate,
+            tsne_perplexity=tsne_perplexity,
+            tsne_learning_rate=tsne_learning_rate,
         )
 
         print(f"DEBUG: Demo - Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")

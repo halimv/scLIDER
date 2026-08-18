@@ -18,7 +18,6 @@ export default function App() {
     n_top_genes: 2000,
     n_pcs: 30,
     n_neighbors: 15,
-    clustering_method: 'leiden',
     clustering_resolution: 0.5,
     embedding_method: 'umap',
     umap_min_dist: 0.1,
@@ -28,18 +27,27 @@ export default function App() {
   })
 
   const handleRun = async () => {
-    if (!file) {
+    if (!file && datasetName !== 'demo') {
       setError('Please upload a CSV file first')
       return
     }
 
     setLoading(true)
     setError(null)
-    setDatasetName(file.name)
 
     try {
-      const data = await runPipeline(file, params)
-      setResult(data)
+      if (datasetName === 'demo') {
+        // Re-run demo with new parameters
+        const queryParams = new URLSearchParams(params)
+        const response = await fetch(`/api/demo?${queryParams}`)
+        if (!response.ok) throw new Error('Failed to load demo dataset')
+        const data = await response.json()
+        setResult(data)
+      } else {
+        // Run with uploaded file
+        const data = await runPipeline(file, params)
+        setResult(data)
+      }
     } catch (err) {
       setError(err.message)
     } finally {
@@ -50,9 +58,11 @@ export default function App() {
   const handleLoadDemo = async () => {
     setLoading(true)
     setError(null)
+    setDatasetName('demo')
 
     try {
-      const response = await fetch('/api/demo')
+      const queryParams = new URLSearchParams(params)
+      const response = await fetch(`/api/demo?${queryParams}`)
       if (!response.ok) throw new Error('Failed to load demo dataset')
       const data = await response.json()
       setResult(data)
@@ -70,7 +80,7 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `${params.clustering_method}_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
+      const paramStr = `leiden_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
       link.href = canvas.toDataURL('image/png')
       link.download = `scLIDER_${timestamp}_${paramStr}.png`
       link.click()
@@ -94,11 +104,11 @@ export default function App() {
 
           <button
             onClick={handleRun}
-            disabled={loading || !file}
+            disabled={loading || (!file && datasetName !== 'demo')}
             style={{
               ...styles.runButton,
-              opacity: loading || !file ? 0.5 : 1,
-              cursor: loading || !file ? 'not-allowed' : 'pointer',
+              opacity: loading || (!file && datasetName !== 'demo') ? 0.5 : 1,
+              cursor: loading || (!file && datasetName !== 'demo') ? 'not-allowed' : 'pointer',
             }}
           >
             {loading ? '⏳ Running...' : '▶ Run Pipeline'}

@@ -11,7 +11,6 @@ def run_pipeline(
     n_pcs: int = 30,
     n_neighbors: int = 15,
     clustering_resolution: float = 0.5,
-    clustering_method: str = "leiden",
     embedding_method: str = "umap",
     umap_min_dist: float = 0.1,
     umap_learning_rate: float = 1.0,
@@ -67,16 +66,12 @@ def run_pipeline(
 
     # Clustering and embedding
     _progress("Building KNN graph...")
+    print(f"DEBUG: n_neighbors={n_neighbors} (type: {type(n_neighbors).__name__})")
     sc.pp.neighbors(adata, n_neighbors=n_neighbors, use_rep='X_pca')
 
-    if clustering_method == "leiden":
-        _progress("Leiden clustering...")
-        sc.tl.leiden(adata, resolution=clustering_resolution)
-    elif clustering_method == "louvain":
-        _progress("Louvain clustering...")
-        sc.tl.louvain(adata, resolution=clustering_resolution)
-    else:
-        raise ValueError(f"Unknown clustering method: {clustering_method}")
+    print(f"DEBUG: resolution={clustering_resolution} (type: {type(clustering_resolution).__name__})")
+    _progress("Leiden clustering...")
+    sc.tl.leiden(adata, resolution=clustering_resolution)
 
     if embedding_method == "umap":
         _progress("Computing UMAP...")
