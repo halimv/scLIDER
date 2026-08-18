@@ -44,9 +44,10 @@ export default function ParamSliders({ params, onParamChange }) {
       </div>
 
       <div style={styles.section}>
-        <h4>Clustering & Embedding</h4>
+        <h4>Clustering</h4>
         <RadioGroup
-          label="Clustering method"
+          name="clustering_method"
+          label="Method"
           value={params.clustering_method}
           options={['leiden', 'louvain']}
           onChange={(v) => handleChange('clustering_method', v)}
@@ -59,21 +60,71 @@ export default function ParamSliders({ params, onParamChange }) {
           onChange={(v) => handleChange('n_neighbors', v)}
         />
         <Slider
-          label="Clustering resolution"
+          label="Resolution"
           value={params.clustering_resolution}
           min={0.1}
           max={2}
           step={0.1}
           onChange={(v) => handleChange('clustering_resolution', v)}
         />
-        <Slider
-          label="UMAP min_dist"
-          value={params.umap_min_dist}
-          min={0.01}
-          max={0.99}
-          step={0.01}
-          onChange={(v) => handleChange('umap_min_dist', v)}
+      </div>
+
+      <div style={styles.section}>
+        <h4>Embedding</h4>
+        <RadioGroup
+          name="embedding_method"
+          label="Method"
+          value={params.embedding_method}
+          options={['umap', 'tsne']}
+          onChange={(v) => handleChange('embedding_method', v)}
         />
+        {params.embedding_method === 'umap' && (
+          <>
+            <Slider
+              label="Min distance"
+              value={params.umap_min_dist}
+              min={0.01}
+              max={0.99}
+              step={0.01}
+              onChange={(v) => handleChange('umap_min_dist', v)}
+            />
+            <Slider
+              label="Learning rate"
+              value={params.umap_learning_rate}
+              min={0.1}
+              max={2}
+              step={0.1}
+              onChange={(v) => handleChange('umap_learning_rate', v)}
+            />
+          </>
+        )}
+        {params.embedding_method === 'tsne' && (
+          <>
+            <Slider
+              label="Perplexity"
+              value={params.tsne_perplexity}
+              min={5}
+              max={100}
+              onChange={(v) => handleChange('tsne_perplexity', v)}
+            />
+            <Slider
+              label="Learning rate"
+              value={params.tsne_learning_rate}
+              min={10}
+              max={1000}
+              step={10}
+              onChange={(v) => handleChange('tsne_learning_rate', v)}
+            />
+            <Slider
+              label="Iterations"
+              value={params.tsne_n_iter}
+              min={250}
+              max={5000}
+              step={250}
+              onChange={(v) => handleChange('tsne_n_iter', v)}
+            />
+          </>
+        )}
       </div>
     </div>
   )
@@ -98,7 +149,17 @@ function Slider({ label, value, min, max, step = 1, onChange }) {
   )
 }
 
-function RadioGroup({ label, value, options, onChange }) {
+function RadioGroup({ name, label, value, options, onChange }) {
+  const getDisplayLabel = (option) => {
+    const labelMap = {
+      'umap': 'UMAP',
+      'tsne': 'tSNE',
+      'leiden': 'Leiden',
+      'louvain': 'Louvain',
+    }
+    return labelMap[option] || option.charAt(0).toUpperCase() + option.slice(1)
+  }
+
   return (
     <div style={styles.radioGroup}>
       <label style={styles.sliderLabel}>{label}</label>
@@ -107,13 +168,13 @@ function RadioGroup({ label, value, options, onChange }) {
           <label key={option} style={styles.radioLabel}>
             <input
               type="radio"
-              name={label}
+              name={name}
               value={option}
               checked={value === option}
               onChange={(e) => onChange(e.target.value)}
               style={styles.radioInput}
             />
-            <span style={styles.radioText}>{option.charAt(0).toUpperCase() + option.slice(1)}</span>
+            <span style={styles.radioText}>{getDisplayLabel(option)}</span>
           </label>
         ))}
       </div>

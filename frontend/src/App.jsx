@@ -17,9 +17,14 @@ export default function App() {
     n_top_genes: 2000,
     n_pcs: 30,
     n_neighbors: 15,
-    clustering_resolution: 0.5,
-    umap_min_dist: 0.1,
     clustering_method: 'leiden',
+    clustering_resolution: 0.5,
+    embedding_method: 'umap',
+    umap_min_dist: 0.1,
+    umap_learning_rate: 1.0,
+    tsne_perplexity: 30.0,
+    tsne_learning_rate: 200.0,
+    tsne_n_iter: 1000,
   })
 
   const handleRun = async () => {
@@ -48,9 +53,9 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_leiden_res=${params.clustering_resolution}_umap_min_dist=${params.umap_min_dist}`
+      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_clust_res=${params.clustering_resolution}_embedding=${params.embedding_method}_umap_dist=${params.umap_min_dist}_umap_lr=${params.umap_learning_rate}_tsne_perp=${params.tsne_perplexity}_tsne_lr=${params.tsne_learning_rate}_tsne_iter=${params.tsne_n_iter}`
       link.href = canvas.toDataURL('image/png')
-      link.download = `scLIDER_UMAP_${timestamp}_${paramStr}.png`
+      link.download = `scLIDER_${params.embedding_method.toUpperCase()}_${timestamp}_${paramStr}.png`
       link.click()
     } catch (err) {
       setError('Failed to download plot: ' + err.message)

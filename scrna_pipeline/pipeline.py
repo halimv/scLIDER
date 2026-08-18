@@ -11,8 +11,13 @@ def run_pipeline(
     n_pcs: int = 30,
     n_neighbors: int = 15,
     clustering_resolution: float = 0.5,
-    umap_min_dist: float = 0.1,
     clustering_method: str = "leiden",
+    embedding_method: str = "umap",
+    umap_min_dist: float = 0.1,
+    umap_learning_rate: float = 1.0,
+    tsne_perplexity: float = 30.0,
+    tsne_learning_rate: float = 200.0,
+    tsne_n_iter: int = 1000,
     progress_callback=None,
 ) -> ad.AnnData:
     """
@@ -33,11 +38,21 @@ def run_pipeline(
     n_neighbors : int
         Number of neighbors for KNN graph.
     clustering_resolution : float
-        Resolution parameter for Leiden clustering.
-    umap_min_dist : float
-        Minimum distance for UMAP.
+        Resolution parameter for clustering (Leiden or Louvain).
     clustering_method : str
         Clustering algorithm to use: "leiden" or "louvain".
+    embedding_method : str
+        Embedding method: "umap" or "tsne".
+    umap_min_dist : float
+        Minimum distance for UMAP embedding.
+    umap_learning_rate : float
+        Learning rate (alpha) for UMAP optimization.
+    tsne_perplexity : float
+        Perplexity parameter for t-SNE.
+    tsne_learning_rate : float
+        Learning rate for t-SNE optimization.
+    tsne_n_iter : int
+        Number of iterations for t-SNE.
 
     Returns
     -------
@@ -95,8 +110,14 @@ def run_pipeline(
     else:
         raise ValueError(f"Unknown clustering method: {clustering_method}")
 
-    _progress("Computing UMAP...")
-    sc.tl.umap(adata, min_dist=umap_min_dist)
+    if embedding_method == "umap":
+        _progress("Computing UMAP...")
+        sc.tl.umap(adata, min_dist=umap_min_dist, alpha=umap_learning_rate)
+    elif embedding_method == "tsne":
+        _progress("Computing t-SNE...")
+        sc.tl.tsne(adata, perplexity=tsne_perplexity, learning_rate=tsne_learning_rate, n_iter=tsne_n_iter)
+    else:
+        raise ValueError(f"Unknown embedding method: {embedding_method}")
 
     _progress("Done!")
 

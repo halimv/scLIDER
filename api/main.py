@@ -29,8 +29,13 @@ async def run_analysis(
     n_pcs: int = Form(30),
     n_neighbors: int = Form(15),
     clustering_resolution: float = Form(0.5),
-    umap_min_dist: float = Form(0.1),
     clustering_method: str = Form("leiden"),
+    embedding_method: str = Form("umap"),
+    umap_min_dist: float = Form(0.1),
+    umap_learning_rate: float = Form(1.0),
+    tsne_perplexity: float = Form(30.0),
+    tsne_learning_rate: float = Form(200.0),
+    tsne_n_iter: int = Form(1000),
 ):
     try:
         content = await file.read()
@@ -69,8 +74,13 @@ async def run_analysis(
             n_pcs=n_pcs,
             n_neighbors=n_neighbors,
             clustering_resolution=clustering_resolution,
-            umap_min_dist=umap_min_dist,
             clustering_method=clustering_method,
+            embedding_method=embedding_method,
+            umap_min_dist=umap_min_dist,
+            umap_learning_rate=umap_learning_rate,
+            tsne_perplexity=tsne_perplexity,
+            tsne_learning_rate=tsne_learning_rate,
+            tsne_n_iter=tsne_n_iter,
         )
 
         print(f"DEBUG: Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")
