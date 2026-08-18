@@ -28,7 +28,7 @@ const COLORS = [
   '#FF9999', '#FFCC99', '#FFFF99', '#99FF99', '#99FFCC',
 ]
 
-export default function UmapPlot({ data, loading, params, datasetName }) {
+export default function UmapPlot({ data, loading, params, datasetName, onLoadDemo }) {
   const [elapsedTime, setElapsedTime] = useState(0)
 
   useEffect(() => {
@@ -74,7 +74,63 @@ export default function UmapPlot({ data, loading, params, datasetName }) {
   if (!data || data.cells.length === 0) {
     return (
       <div style={styles.emptyContainer}>
-        <p>Upload a CSV file and click Run to see results</p>
+        <div style={styles.tutorialContent}>
+          <h2 style={styles.tutorialTitle}>Welcome to scLIDER</h2>
+
+          <div style={styles.section}>
+            <h3 style={styles.sectionTitle}>🚀 Quick Start</h3>
+            <button
+              onClick={onLoadDemo}
+              style={styles.demoButtonLarge}
+            >
+              📊 Load Demo Dataset (Thymus 10X)
+            </button>
+            <p style={styles.sectionText}>
+              Demo dataset from <em>Tabula Muris</em>, a comprehensive single-cell transcriptomic atlas of mouse tissues.
+              This is the thymus tissue with ~1500 cells from 10X Genomics sequencing.
+            </p>
+            <p style={styles.sectionText}>Or upload your own CSV or 10X ZIP file using the panel on the left.</p>
+          </div>
+
+          <div style={styles.section}>
+            <h3 style={styles.sectionTitle}>📋 Pipeline Overview</h3>
+            <p style={styles.sectionText}>
+              scLIDER performs quality control, normalization, dimensionality reduction, and clustering on single-cell RNA-seq data:
+            </p>
+            <ol style={styles.list}>
+              <li><strong>QC Filtering:</strong> Remove low-quality cells based on gene count and mitochondrial percentage</li>
+              <li><strong>Normalization:</strong> Log or scale transformation to account for sequencing depth</li>
+              <li><strong>HVG Selection:</strong> Identify highly variable genes for downstream analysis</li>
+              <li><strong>PCA:</strong> Dimensionality reduction to principal components</li>
+              <li><strong>Neighbors:</strong> Build k-nearest neighbor graph</li>
+              <li><strong>Clustering:</strong> Leiden or Louvain community detection</li>
+              <li><strong>Embedding:</strong> UMAP or t-SNE visualization</li>
+            </ol>
+          </div>
+
+          <div style={styles.section}>
+            <h3 style={styles.sectionTitle}>📚 Resources</h3>
+            <p style={styles.sectionText}>
+              Learn more about the tools used:
+              <br />
+              <a href="https://scanpy.readthedocs.io/" target="_blank" rel="noopener noreferrer" style={styles.link}>
+                Scanpy Documentation
+              </a>
+              {' | '}
+              <a href="https://umap-learn.readthedocs.io/" target="_blank" rel="noopener noreferrer" style={styles.link}>
+                UMAP
+              </a>
+              {' | '}
+              <a href="https://scikit-learn.org/stable/modules/manifold.html#t-sne" target="_blank" rel="noopener noreferrer" style={styles.link}>
+                t-SNE
+              </a>
+              {' | '}
+              <a href="https://github.com/vtraag/leidenalg" target="_blank" rel="noopener noreferrer" style={styles.link}>
+                Leiden
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
@@ -224,13 +280,81 @@ const styles = {
   },
   emptyContainer: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     height: '100%',
     backgroundColor: 'white',
     borderRadius: '8px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    color: '#999',
+    color: '#333',
+    overflow: 'auto',
+  },
+  tutorialContent: {
+    maxWidth: '900px',
+    padding: '60px 40px 40px 40px',
+    width: '100%',
+  },
+  tutorialTitle: {
+    fontSize: '32px',
+    marginTop: '0px',
+    marginBottom: '8px',
+    color: '#1a1a2e',
+    fontWeight: 700,
+  },
+  tutorialSubtitle: {
+    fontSize: '14px',
+    color: '#666',
+    marginBottom: '40px',
+  },
+  section: {
+    marginBottom: '30px',
+  },
+  sectionTitle: {
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#1a1a2e',
+    marginBottom: '12px',
+  },
+  sectionText: {
+    fontSize: '14px',
+    lineHeight: '1.6',
+    color: '#555',
+    marginBottom: '10px',
+  },
+  list: {
+    fontSize: '14px',
+    lineHeight: '1.8',
+    color: '#555',
+    paddingLeft: '20px',
+  },
+  demoButtonLarge: {
+    padding: '12px 24px',
+    backgroundColor: '#6c63ff',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '16px',
+    fontWeight: 600,
+    marginBottom: '12px',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  paramGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gap: '15px',
+  },
+  paramCard: {
+    padding: '15px',
+    backgroundColor: '#f5f5f5',
+    borderRadius: '6px',
+    fontSize: '13px',
+    lineHeight: '1.6',
+    color: '#555',
+  },
+  link: {
+    color: '#0066cc',
+    textDecoration: 'none',
   },
 }
 
