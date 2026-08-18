@@ -27,7 +27,7 @@ def main():
         n_top_genes=args.n_top_genes,
         n_pcs=args.n_pcs,
         n_neighbors=args.n_neighbors,
-        leiden_resolution=args.leiden_resolution,
+        clustering_resolution=args.leiden_resolution,
         umap_min_dist=args.umap_min_dist,
     )
 

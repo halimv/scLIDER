@@ -14,6 +14,7 @@ export default function App() {
   const [params, setParams] = useState({
     n_genes_min: 200,
     pct_mt_max: 10.0,
+    normalization_method: 'log',
     n_top_genes: 2000,
     n_pcs: 30,
     n_neighbors: 15,
@@ -24,7 +25,6 @@ export default function App() {
     umap_learning_rate: 1.0,
     tsne_perplexity: 30.0,
     tsne_learning_rate: 200.0,
-    tsne_n_iter: 1000,
   })
 
   const handleRun = async () => {
@@ -53,7 +53,7 @@ export default function App() {
       const canvas = await html2canvas(plotRef.current, { scale: 2 })
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
-      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_clust_res=${params.clustering_resolution}_embedding=${params.embedding_method}_umap_dist=${params.umap_min_dist}_umap_lr=${params.umap_learning_rate}_tsne_perp=${params.tsne_perplexity}_tsne_lr=${params.tsne_learning_rate}_tsne_iter=${params.tsne_n_iter}`
+      const paramStr = `n_genes_min=${params.n_genes_min}_pct_mt_max=${params.pct_mt_max}_norm=${params.normalization_method}_n_top_genes=${params.n_top_genes}_n_pcs=${params.n_pcs}_n_neighbors=${params.n_neighbors}_clustering=${params.clustering_method}_clust_res=${params.clustering_resolution}_embedding=${params.embedding_method}_umap_dist=${params.umap_min_dist}_umap_lr=${params.umap_learning_rate}_tsne_perp=${params.tsne_perplexity}_tsne_lr=${params.tsne_learning_rate}`
       link.href = canvas.toDataURL('image/png')
       link.download = `scLIDER_${params.embedding_method.toUpperCase()}_${timestamp}_${paramStr}.png`
       link.click()

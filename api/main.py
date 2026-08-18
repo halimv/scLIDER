@@ -1,12 +1,14 @@
-from fastapi import FastAPI, File, Form, UploadFile, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from numpy import asarray
+import pandas as pd
 import tempfile
 import zipfile
-import pandas as pd
+import shutil
 import json
 import io
 from pathlib import Path
+from fastapi import FastAPI, File, Form, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from scrna_pipeline.pipeline import run_pipeline
 
 app = FastAPI(title="scLIDER API")
@@ -30,19 +32,19 @@ async def run_analysis(
     n_neighbors: int = Form(15),
     clustering_resolution: float = Form(0.5),
     clustering_method: str = Form("leiden"),
+    normalization_method: str = Form("log"),
     embedding_method: str = Form("umap"),
     umap_min_dist: float = Form(0.1),
     umap_learning_rate: float = Form(1.0),
     tsne_perplexity: float = Form(30.0),
     tsne_learning_rate: float = Form(200.0),
-    tsne_n_iter: int = Form(1000),
 ):
     try:
         content = await file.read()
         print(f"DEBUG: Uploaded file size: {len(content)} bytes, filename: {file.filename}")
 
         # Handle CSV or ZIP files
-        if file.filename.endswith('.zip'):
+        if file.filename and file.filename.endswith('.zip'):
             # Extract ZIP to temp directory
             tmp_dir = tempfile.mkdtemp()
             zip_path = Path(tmp_dir) / "upload.zip"
@@ -75,12 +77,12 @@ async def run_analysis(
             n_neighbors=n_neighbors,
             clustering_resolution=clustering_resolution,
             clustering_method=clustering_method,
+            normalization_method=normalization_method,
             embedding_method=embedding_method,
             umap_min_dist=umap_min_dist,
             umap_learning_rate=umap_learning_rate,
             tsne_perplexity=tsne_perplexity,
             tsne_learning_rate=tsne_learning_rate,
-            tsne_n_iter=tsne_n_iter,
         )
 
         print(f"DEBUG: Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")
@@ -89,18 +91,17 @@ async def run_analysis(
 
         # Cleanup
         if cleanup_dir:
-            import shutil
             shutil.rmtree(cleanup_dir)
         else:
             Path(data_path).unlink()
 
-        umap_coords = adata.obsm['X_umap']
-        clusters = adata.obs['leiden'].astype(int).values
+        umap_coords = asarray(adata.obsm['X_umap'])
+        clusters = asarray(adata.obs['leiden'].astype(int))
         cell_names = adata.obs_names.tolist()
 
         cells = [
             {
-                "node": cell_names[i],
+                "node": str(cell_names[i]),
                 "umap1": float(umap_coords[i, 0]),
                 "umap2": float(umap_coords[i, 1]),
                 "cluster": int(clusters[i]),

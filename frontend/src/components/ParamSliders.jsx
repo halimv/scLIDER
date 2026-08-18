@@ -25,6 +25,17 @@ export default function ParamSliders({ params, onParamChange }) {
       </div>
 
       <div style={styles.section}>
+        <h4>Normalization</h4>
+        <RadioGroup
+          name="normalization_method"
+          label="Method"
+          value={params.normalization_method}
+          options={['log', 'pearson_residuals']}
+          onChange={(v) => handleChange('normalization_method', v)}
+        />
+      </div>
+
+      <div style={styles.section}>
         <h4>HVG & PCA</h4>
         <Slider
           label="Highly variable genes"
@@ -115,14 +126,6 @@ export default function ParamSliders({ params, onParamChange }) {
               step={10}
               onChange={(v) => handleChange('tsne_learning_rate', v)}
             />
-            <Slider
-              label="Iterations"
-              value={params.tsne_n_iter}
-              min={250}
-              max={5000}
-              step={250}
-              onChange={(v) => handleChange('tsne_n_iter', v)}
-            />
           </>
         )}
       </div>
@@ -156,6 +159,8 @@ function RadioGroup({ name, label, value, options, onChange }) {
       'tsne': 'tSNE',
       'leiden': 'Leiden',
       'louvain': 'Louvain',
+      'log': 'Log normalization',
+      'pearson_residuals': 'Pearson residuals',
     }
     return labelMap[option] || option.charAt(0).toUpperCase() + option.slice(1)
   }

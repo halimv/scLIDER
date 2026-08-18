@@ -12,12 +12,12 @@ def run_pipeline(
     n_neighbors: int = 15,
     clustering_resolution: float = 0.5,
     clustering_method: str = "leiden",
+    normalization_method: str = "log",
     embedding_method: str = "umap",
     umap_min_dist: float = 0.1,
     umap_learning_rate: float = 1.0,
     tsne_perplexity: float = 30.0,
     tsne_learning_rate: float = 200.0,
-    tsne_n_iter: int = 1000,
     progress_callback=None,
 ) -> ad.AnnData:
     """
@@ -41,6 +41,8 @@ def run_pipeline(
         Resolution parameter for clustering (Leiden or Louvain).
     clustering_method : str
         Clustering algorithm to use: "leiden" or "louvain".
+    normalization_method : str
+        Normalization method: "log" or "pearson_residuals".
     embedding_method : str
         Embedding method: "umap" or "tsne".
     umap_min_dist : float
@@ -51,8 +53,6 @@ def run_pipeline(
         Perplexity parameter for t-SNE.
     tsne_learning_rate : float
         Learning rate for t-SNE optimization.
-    tsne_n_iter : int
-        Number of iterations for t-SNE.
 
     Returns
     -------
@@ -89,8 +89,14 @@ def run_pipeline(
 
     # Normalize
     _progress("Normalizing...")
-    sc.pp.normalize_total(adata)
-    sc.pp.log1p(adata)
+    if normalization_method == "log":
+        sc.pp.normalize_total(adata)
+        sc.pp.log1p(adata)
+    elif normalization_method == "pearson_residuals":
+        sc.pp.normalize_total(adata)
+        sc.pp.scale(adata, max_value=10)
+    else:
+        raise ValueError(f"Unknown normalization method: {normalization_method}")
 
     # HVG selection and PCA
     _progress("Selecting HVGs & PCA...")
@@ -115,7 +121,7 @@ def run_pipeline(
         sc.tl.umap(adata, min_dist=umap_min_dist, alpha=umap_learning_rate)
     elif embedding_method == "tsne":
         _progress("Computing t-SNE...")
-        sc.tl.tsne(adata, perplexity=tsne_perplexity, learning_rate=tsne_learning_rate, n_iter=tsne_n_iter)
+        sc.tl.tsne(adata, perplexity=tsne_perplexity, learning_rate=tsne_learning_rate)
     else:
         raise ValueError(f"Unknown embedding method: {embedding_method}")
 
