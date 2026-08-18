@@ -24,11 +24,14 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+/var/
 
 # Temp files and extracted data
 *.tmp
 /tmp/
 extracted/
+cache/
+var-folders-*.h5ad
 
 # Keep data files
 !data/*.zip
