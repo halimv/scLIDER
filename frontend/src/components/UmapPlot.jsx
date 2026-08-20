@@ -37,12 +37,16 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
     return () => clearInterval(interval)
   }, [loading])
 
+  const dim1Key = params?.embedding_method === 'tsne' ? 'tsne1' : 'umap1'
+  const dim2Key = params?.embedding_method === 'tsne' ? 'tsne2' : 'umap2'
+  const embeddingName = params?.embedding_method === 'tsne' ? 't-SNE' : 'UMAP'
+
   if (data && data.cells.length > 0) {
-    const umap1Values = data.cells.map(c => c.umap1)
-    const umap2Values = data.cells.map(c => c.umap2)
-    console.log('UMAP data received:')
-    console.log(`  X range: [${Math.min(...umap1Values).toFixed(2)}, ${Math.max(...umap1Values).toFixed(2)}]`)
-    console.log(`  Y range: [${Math.min(...umap2Values).toFixed(2)}, ${Math.max(...umap2Values).toFixed(2)}]`)
+    const dim1Values = data.cells.map(c => c[dim1Key])
+    const dim2Values = data.cells.map(c => c[dim2Key])
+    console.log(`${embeddingName} data received:`)
+    console.log(`  X range: [${Math.min(...dim1Values).toFixed(2)}, ${Math.max(...dim1Values).toFixed(2)}]`)
+    console.log(`  Y range: [${Math.min(...dim2Values).toFixed(2)}, ${Math.max(...dim2Values).toFixed(2)}]`)
     console.log(`  Cells: ${data.cells.length}`)
   }
 
@@ -53,7 +57,7 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
     if (elapsedTime < 4) return 'Selecting HVGs & PCA...'
     if (elapsedTime < 5) return 'Building KNN graph...'
     if (elapsedTime < 6) return 'Leiden clustering...'
-    if (elapsedTime < 7) return 'Computing UMAP...'
+    if (elapsedTime < 7) return `Computing ${embeddingName}...`
     return 'Finalizing...'
   }
 
@@ -136,8 +140,8 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
   }
 
   const chartData = data.cells.map((cell) => ({
-    umap1: cell.umap1,
-    umap2: cell.umap2,
+    [dim1Key]: cell[dim1Key],
+    [dim2Key]: cell[dim2Key],
     cluster: cell.cluster,
   }))
 
@@ -148,14 +152,14 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
   })
 
   // Calculate data ranges with 5% padding
-  const umap1Values = data.cells.map(c => c.umap1)
-  const umap2Values = data.cells.map(c => c.umap2)
-  const umap1Min = Math.min(...umap1Values)
-  const umap1Max = Math.max(...umap1Values)
-  const umap2Min = Math.min(...umap2Values)
-  const umap2Max = Math.max(...umap2Values)
-  const umap1Padding = (umap1Max - umap1Min) * 0.05
-  const umap2Padding = (umap2Max - umap2Min) * 0.05
+  const dim1Values = data.cells.map(c => c[dim1Key])
+  const dim2Values = data.cells.map(c => c[dim2Key])
+  const dim1Min = Math.min(...dim1Values)
+  const dim1Max = Math.max(...dim1Values)
+  const dim2Min = Math.min(...dim2Values)
+  const dim2Max = Math.max(...dim2Values)
+  const dim1Padding = (dim1Max - dim1Min) * 0.05
+  const dim2Padding = (dim2Max - dim2Min) * 0.05
 
   const embeddingTitle = params?.embedding_method === 'tsne' ? 'tSNE' : 'UMAP'
   const displayName = datasetName === 'demo' ? 'demo' : datasetName?.replace(/\.[^/.]+$/, '') || 'data'
@@ -191,24 +195,24 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
         <ScatterChart margin={{ top: 20, right: 60, bottom: 60, left: 60 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
-            dataKey="umap1"
+            dataKey={dim1Key}
             type="number"
-            domain={[umap1Min - umap1Padding, umap1Max + umap1Padding]}
-            label={{ value: 'UMAP 1', position: 'insideBottom', offset: -10 }}
+            domain={[dim1Min - dim1Padding, dim1Max + dim1Padding]}
+            label={{ value: `${embeddingName} 1`, position: 'insideBottom', offset: -10 }}
             tickFormatter={(value) => Math.round(value)}
           />
           <YAxis
-            dataKey="umap2"
+            dataKey={dim2Key}
             type="number"
-            domain={[umap2Min - umap2Padding, umap2Max + umap2Padding]}
-            label={{ value: 'UMAP 2', angle: -90, position: 'insideLeft' }}
+            domain={[dim2Min - dim2Padding, dim2Max + dim2Padding]}
+            label={{ value: `${embeddingName} 2`, angle: -90, position: 'insideLeft' }}
             tickFormatter={(value) => Math.round(value)}
           />
           <Tooltip cursor={{ strokeDasharray: '3 3' }} />
           {uniqueClusters.map((cluster) => (
             <Scatter
               key={cluster}
-              dataKey="umap2"
+              dataKey={dim2Key}
               name={`Cluster ${cluster}`}
               data={chartData.filter((d) => d.cluster === cluster)}
               fill={clusterColors[cluster]}
@@ -218,8 +222,8 @@ export default function UmapPlot({ data, loading, params, datasetName, onLoadDem
           {data.cluster_labels && (
             <Scatter
               data={data.cluster_labels.map((label) => ({
-                umap1: label.x,
-                umap2: label.y,
+                [dim1Key]: label.x,
+                [dim2Key]: label.y,
                 label: label.cluster,
               }))}
               fill="none"

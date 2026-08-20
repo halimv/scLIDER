@@ -82,8 +82,18 @@ async def run_analysis(
         )
 
         print(f"DEBUG: Cells={adata.n_obs}, Genes={adata.n_vars}, Clusters={len(adata.obs['leiden'].unique())}")
-        print(f"DEBUG: UMAP X range: [{adata.obsm['X_umap'][:, 0].min():.2f}, {adata.obsm['X_umap'][:, 0].max():.2f}]")
-        print(f"DEBUG: UMAP Y range: [{adata.obsm['X_umap'][:, 1].min():.2f}, {adata.obsm['X_umap'][:, 1].max():.2f}]")
+
+        # Get the appropriate embedding coordinates
+        if embedding_method == "tsne":
+            embedding_key = 'X_tsne'
+            dim1, dim2 = "tsne1", "tsne2"
+        else:
+            embedding_key = 'X_umap'
+            dim1, dim2 = "umap1", "umap2"
+
+        embedding_coords = asarray(adata.obsm[embedding_key])
+        print(f"DEBUG: {embedding_method.upper()} X range: [{embedding_coords[:, 0].min():.2f}, {embedding_coords[:, 0].max():.2f}]")
+        print(f"DEBUG: {embedding_method.upper()} Y range: [{embedding_coords[:, 1].min():.2f}, {embedding_coords[:, 1].max():.2f}]")
 
         # Cleanup
         if cleanup_dir:
@@ -91,15 +101,14 @@ async def run_analysis(
         else:
             Path(data_path).unlink()
 
-        umap_coords = asarray(adata.obsm['X_umap'])
         clusters = asarray(adata.obs['leiden'].astype(int))
         cell_names = adata.obs_names.tolist()
 
         cells = [
             {
                 "node": str(cell_names[i]),
-                "umap1": float(umap_coords[i, 0]),
-                "umap2": float(umap_coords[i, 1]),
+                dim1: float(embedding_coords[i, 0]),
+                dim2: float(embedding_coords[i, 1]),
                 "cluster": int(clusters[i]),
             }
             for i in range(len(cell_names))
@@ -110,8 +119,8 @@ async def run_analysis(
         cluster_labels = []
         for cluster_id in sorted(adata.obs['leiden'].unique()):
             mask = clusters == int(cluster_id)
-            centroid_x = float(np.mean(umap_coords[mask, 0]))
-            centroid_y = float(np.mean(umap_coords[mask, 1]))
+            centroid_x = float(np.mean(embedding_coords[mask, 0]))
+            centroid_y = float(np.mean(embedding_coords[mask, 1]))
             cluster_labels.append({
                 "cluster": int(cluster_id),
                 "x": centroid_x,
@@ -186,15 +195,23 @@ async def run_demo(
 
         shutil.rmtree(tmp_dir)
 
-        umap_coords = asarray(adata.obsm['X_umap'])
+        # Get the appropriate embedding coordinates
+        if embedding_method == "tsne":
+            embedding_key = 'X_tsne'
+            dim1, dim2 = "tsne1", "tsne2"
+        else:
+            embedding_key = 'X_umap'
+            dim1, dim2 = "umap1", "umap2"
+
+        embedding_coords = asarray(adata.obsm[embedding_key])
         clusters = asarray(adata.obs['leiden'].astype(int))
         cell_names = adata.obs_names.tolist()
 
         cells = [
             {
                 "node": str(cell_names[i]),
-                "umap1": float(umap_coords[i, 0]),
-                "umap2": float(umap_coords[i, 1]),
+                dim1: float(embedding_coords[i, 0]),
+                dim2: float(embedding_coords[i, 1]),
                 "cluster": int(clusters[i]),
             }
             for i in range(len(cell_names))
@@ -203,8 +220,8 @@ async def run_demo(
         cluster_labels = []
         for cluster_id in sorted(adata.obs['leiden'].unique()):
             mask = clusters == int(cluster_id)
-            centroid_x = float(umap_coords[mask, 0].mean())
-            centroid_y = float(umap_coords[mask, 1].mean())
+            centroid_x = float(embedding_coords[mask, 0].mean())
+            centroid_y = float(embedding_coords[mask, 1].mean())
             cluster_labels.append({
                 "cluster": int(cluster_id),
                 "x": centroid_x,
