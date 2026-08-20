@@ -47,6 +47,13 @@ export default function App() {
     tsne_learning_rate: 200.0,
   })
 
+  const handleFileSelect = (selectedFile) => {
+    setFile(selectedFile)
+    if (selectedFile) {
+      setDatasetName(selectedFile.name)
+    }
+  }
+
   const handleRun = async () => {
     if (!file && datasetName !== 'demo') {
       setError('Please upload a CSV file first')
@@ -124,7 +131,7 @@ export default function App() {
 
       <div style={styles.container}>
         <aside style={styles.sidebar}>
-          <UploadPanel file={file} onFileSelect={setFile} />
+          <UploadPanel file={file} onFileSelect={handleFileSelect} />
 
           <ParamSliders params={params} onParamChange={setParams} />
 
