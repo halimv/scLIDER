@@ -1,9 +1,29 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import html2canvas from 'html2canvas'
 import UploadPanel from './components/UploadPanel'
 import ParamSliders from './components/ParamSliders'
 import UmapPlot from './components/UmapPlot'
 import { runPipeline } from './api'
+
+// Add animation styles
+const keyframes = `
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+`
+
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style')
+  style.textContent = keyframes
+  document.head.appendChild(style)
+}
 
 export default function App() {
   const plotRef = useRef(null)
@@ -11,6 +31,7 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
+  const [downloadConfirm, setDownloadConfirm] = useState(null)
   const [datasetName, setDatasetName] = useState('demo')
   const [params, setParams] = useState({
     n_genes_min: 200,
@@ -81,9 +102,14 @@ export default function App() {
       const link = document.createElement('a')
       const timestamp = new Date().toISOString().slice(0, 10)
       const paramStr = `leiden_${params.embedding_method.toUpperCase()}_cr=${params.clustering_resolution}`
+      const filename = `scLIDER_${timestamp}_${paramStr}.png`
       link.href = canvas.toDataURL('image/png')
-      link.download = `scLIDER_${timestamp}_${paramStr}.png`
+      link.download = filename
       link.click()
+
+      // Show confirmation
+      setDownloadConfirm(filename)
+      setTimeout(() => setDownloadConfirm(null), 3500)
     } catch (err) {
       setError('Failed to download plot: ' + err.message)
     }
@@ -121,6 +147,25 @@ export default function App() {
           <UmapPlot data={result} loading={loading} params={params} datasetName={datasetName} onLoadDemo={handleLoadDemo} onDownload={handleDownload} />
         </main>
       </div>
+
+      {downloadConfirm && (
+        <div style={styles.downloadToast}>
+          <div style={styles.toastContent}>
+            <span style={styles.toastIcon}>✓</span>
+            <div style={styles.toastText}>
+              <div style={styles.toastTitle}>Download saved!</div>
+              <div style={styles.toastFilename}>{downloadConfirm}</div>
+            </div>
+            <button
+              onClick={() => setDownloadConfirm(null)}
+              style={styles.toastCloseButton}
+              title="Dismiss"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -176,5 +221,53 @@ const styles = {
     borderRadius: '6px',
     fontSize: '14px',
     border: '1px solid #f5c6cb',
+  },
+  downloadToast: {
+    position: 'fixed',
+    bottom: '20px',
+    right: '20px',
+    backgroundColor: '#d4edda',
+    border: '1px solid #c3e6cb',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    zIndex: 1000,
+    animation: 'slideIn 0.3s ease-out',
+  },
+  toastContent: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '16px 20px',
+  },
+  toastIcon: {
+    fontSize: '20px',
+    color: '#155724',
+    fontWeight: 'bold',
+  },
+  toastText: {
+    flex: 1,
+  },
+  toastTitle: {
+    color: '#155724',
+    fontWeight: '600',
+    fontSize: '14px',
+    marginBottom: '4px',
+  },
+  toastFilename: {
+    color: '#155724',
+    fontSize: '12px',
+    opacity: 0.8,
+    wordBreak: 'break-all',
+    maxWidth: '300px',
+  },
+  toastCloseButton: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    color: '#155724',
+    fontSize: '16px',
+    cursor: 'pointer',
+    padding: '4px 8px',
+    opacity: 0.7,
+    transition: 'opacity 0.2s',
   },
 }

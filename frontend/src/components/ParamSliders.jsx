@@ -1,6 +1,24 @@
+const DEFAULT_PARAMS = {
+  n_genes_min: 200,
+  pct_mt_max: 10.0,
+  n_top_genes: 2000,
+  n_pcs: 30,
+  n_neighbors: 15,
+  clustering_resolution: 0.5,
+  embedding_method: 'umap',
+  umap_min_dist: 0.1,
+  umap_learning_rate: 1.0,
+  tsne_perplexity: 30.0,
+  tsne_learning_rate: 200.0,
+}
+
 export default function ParamSliders({ params, onParamChange }) {
   const handleChange = (key, value) => {
     onParamChange({ ...params, [key]: value })
+  }
+
+  const handleReset = (key) => {
+    handleChange(key, DEFAULT_PARAMS[key])
   }
 
   return (
@@ -12,7 +30,9 @@ export default function ParamSliders({ params, onParamChange }) {
           value={params.n_genes_min}
           min={50}
           max={1000}
+          defaultValue={DEFAULT_PARAMS.n_genes_min}
           onChange={(v) => handleChange('n_genes_min', v)}
+          onReset={() => handleReset('n_genes_min')}
         />
         <Slider
           label="Max mitochondrial %"
@@ -20,7 +40,9 @@ export default function ParamSliders({ params, onParamChange }) {
           min={1}
           max={50}
           step={0.5}
+          defaultValue={DEFAULT_PARAMS.pct_mt_max}
           onChange={(v) => handleChange('pct_mt_max', v)}
+          onReset={() => handleReset('pct_mt_max')}
         />
       </div>
 
@@ -32,14 +54,18 @@ export default function ParamSliders({ params, onParamChange }) {
           min={500}
           max={5000}
           step={100}
+          defaultValue={DEFAULT_PARAMS.n_top_genes}
           onChange={(v) => handleChange('n_top_genes', v)}
+          onReset={() => handleReset('n_top_genes')}
         />
         <Slider
           label="Principal components"
           value={params.n_pcs}
           min={10}
           max={100}
+          defaultValue={DEFAULT_PARAMS.n_pcs}
           onChange={(v) => handleChange('n_pcs', v)}
+          onReset={() => handleReset('n_pcs')}
         />
       </div>
 
@@ -50,7 +76,9 @@ export default function ParamSliders({ params, onParamChange }) {
           value={params.n_neighbors}
           min={5}
           max={100}
+          defaultValue={DEFAULT_PARAMS.n_neighbors}
           onChange={(v) => handleChange('n_neighbors', v)}
+          onReset={() => handleReset('n_neighbors')}
         />
         <Slider
           label="Resolution"
@@ -58,7 +86,9 @@ export default function ParamSliders({ params, onParamChange }) {
           min={0.1}
           max={2}
           step={0.1}
+          defaultValue={DEFAULT_PARAMS.clustering_resolution}
           onChange={(v) => handleChange('clustering_resolution', v)}
+          onReset={() => handleReset('clustering_resolution')}
         />
       </div>
 
@@ -79,7 +109,9 @@ export default function ParamSliders({ params, onParamChange }) {
               min={0.01}
               max={0.99}
               step={0.01}
+              defaultValue={DEFAULT_PARAMS.umap_min_dist}
               onChange={(v) => handleChange('umap_min_dist', v)}
+              onReset={() => handleReset('umap_min_dist')}
             />
             <Slider
               label="Learning rate"
@@ -87,7 +119,9 @@ export default function ParamSliders({ params, onParamChange }) {
               min={0.1}
               max={2}
               step={0.1}
+              defaultValue={DEFAULT_PARAMS.umap_learning_rate}
               onChange={(v) => handleChange('umap_learning_rate', v)}
+              onReset={() => handleReset('umap_learning_rate')}
             />
           </>
         )}
@@ -98,7 +132,9 @@ export default function ParamSliders({ params, onParamChange }) {
               value={params.tsne_perplexity}
               min={5}
               max={100}
+              defaultValue={DEFAULT_PARAMS.tsne_perplexity}
               onChange={(v) => handleChange('tsne_perplexity', v)}
+              onReset={() => handleReset('tsne_perplexity')}
             />
             <Slider
               label="Learning rate"
@@ -106,7 +142,9 @@ export default function ParamSliders({ params, onParamChange }) {
               min={10}
               max={1000}
               step={10}
+              defaultValue={DEFAULT_PARAMS.tsne_learning_rate}
               onChange={(v) => handleChange('tsne_learning_rate', v)}
+              onReset={() => handleReset('tsne_learning_rate')}
             />
           </>
         )}
@@ -115,12 +153,28 @@ export default function ParamSliders({ params, onParamChange }) {
   )
 }
 
-function Slider({ label, value, min, max, step = 1, onChange }) {
+function Slider({ label, value, min, max, step = 1, onChange, onReset, defaultValue }) {
+  const isDefault = value === defaultValue
+
   return (
     <div style={styles.sliderGroup}>
-      <label style={styles.sliderLabel}>
-        {label}: <span style={styles.value}>{value.toFixed(2)}</span>
-      </label>
+      <div style={styles.labelRow}>
+        <label style={styles.sliderLabel}>
+          {label}: <span style={styles.value}>{value.toFixed(2)}</span>
+        </label>
+        <button
+          onClick={onReset}
+          disabled={isDefault}
+          style={{
+            ...styles.resetButton,
+            opacity: isDefault ? 0.4 : 1,
+            cursor: isDefault ? 'not-allowed' : 'pointer',
+          }}
+          title="Reset to default"
+        >
+          🔄
+        </button>
+      </div>
       <input
         type="range"
         min={min}
@@ -180,15 +234,28 @@ const styles = {
   sliderGroup: {
     marginBottom: '12px',
   },
+  labelRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '6px',
+  },
   sliderLabel: {
-    display: 'block',
     fontSize: '14px',
     fontWeight: 500,
-    marginBottom: '6px',
+    margin: 0,
   },
   value: {
     color: '#0066cc',
     fontWeight: 600,
+  },
+  resetButton: {
+    backgroundColor: 'transparent',
+    border: 'none',
+    fontSize: '14px',
+    cursor: 'pointer',
+    padding: '4px 6px',
+    transition: 'transform 0.2s, opacity 0.2s',
   },
   slider: {
     width: '100%',
