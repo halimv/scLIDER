@@ -67,7 +67,7 @@ export default function App() {
       if (datasetName === 'demo') {
         // Re-run demo with new parameters
         const queryParams = new URLSearchParams(params)
-        const response = await fetch(`/api/demo?${queryParams}`)
+        const response = await fetch(`http://localhost:8000/demo?${queryParams}`)
         if (!response.ok) throw new Error('Failed to load demo dataset')
         const data = await response.json()
         setResult(data)
@@ -90,7 +90,7 @@ export default function App() {
 
     try {
       const queryParams = new URLSearchParams(params)
-      const response = await fetch(`/api/demo?${queryParams}`)
+      const response = await fetch(`http://localhost:8000/demo?${queryParams}`)
       if (!response.ok) throw new Error('Failed to load demo dataset')
       const data = await response.json()
       setResult(data)
